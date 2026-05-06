@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import { constants as fsConstants } from "node:fs";
+import crypto from "node:crypto";
 
 import { getDuckyDir, getSessionFilePath } from "./paths.js";
 import type { SessionState } from "../types/session.js";
@@ -20,9 +21,14 @@ export async function readSession(projectRoot: string): Promise<SessionState | n
   }
 
   const raw = await fs.readFile(sessionFile, "utf8");
-  const data = JSON.parse(raw) as SessionState;
+  let data: SessionState;
+  try {
+    data = JSON.parse(raw) as SessionState;
+  } catch {
+    return null;
+  }
 
-  if (!data || data.version !== SESSION_VERSION) {
+  if (!data || data.version !== SESSION_VERSION || typeof data.sessionId !== "string" || data.sessionId.length === 0) {
     return null;
   }
 
@@ -53,6 +59,7 @@ export function createInitialSession(projectRoot: string, pid: number, now = new
 
   return {
     version: SESSION_VERSION,
+    sessionId: crypto.randomUUID(),
     projectRoot,
     pid,
     startedAt: timestamp,

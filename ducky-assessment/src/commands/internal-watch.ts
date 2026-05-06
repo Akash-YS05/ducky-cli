@@ -5,6 +5,8 @@ import { readTrackingState, writeTrackingState } from "../runtime/tracking-store
 const HEARTBEAT_INTERVAL_MS = 5_000;
 
 export async function runInternalWatchCommand(projectRoot: string): Promise<void> {
+  const startedAt = Date.now();
+
   const tick = async (): Promise<void> => {
     const session = await readSession(projectRoot);
 
@@ -21,6 +23,11 @@ export async function runInternalWatchCommand(projectRoot: string): Promise<void
       return;
     }
 
+    if (tracking.sessionId !== session.sessionId) {
+      process.exit(0);
+      return;
+    }
+
     const updated = await collectAllSignals(tracking);
     await writeTrackingState(projectRoot, updated);
   };
@@ -30,6 +37,12 @@ export async function runInternalWatchCommand(projectRoot: string): Promise<void
   setInterval(() => {
     void safeTick(tick);
   }, HEARTBEAT_INTERVAL_MS);
+
+  process.on("SIGTERM", () => {
+    const uptimeMs = Date.now() - startedAt;
+    console.log(`ducky daemon exiting (uptimeMs=${uptimeMs})`);
+    process.exit(0);
+  });
 }
 
 async function safeTick(tick: () => Promise<void>): Promise<void> {

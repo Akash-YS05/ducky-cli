@@ -20,6 +20,7 @@ export interface GitSample {
 
 export interface TrackingState {
   version: number;
+  sessionId: string;
   projectRoot: string;
   startedAt: string;
   processSamples: ProcessSample[];
