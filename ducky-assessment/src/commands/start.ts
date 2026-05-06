@@ -16,14 +16,14 @@ export async function runStartCommand(projectRoot: string): Promise<void> {
     const alive = isProcessAlive(existing.pid);
 
     if (!alive) {
-      console.log(`Found stale session state (dead pid: ${existing.pid}). Recovering...`);
+      console.log(`Found stale session state (dead pid: ${existing.pid}). Recovering state...`);
     }
 
     if (alive) {
       const heartbeatAgeMs = Date.now() - new Date(existing.lastHeartbeatAt).getTime();
       if (heartbeatAgeMs > STALE_HEARTBEAT_MS) {
         console.log(
-          `Found stale active session (pid: ${existing.pid}, heartbeat age: ${Math.round(heartbeatAgeMs / 1000)}s). Recovering...`
+          `Found stale active session (pid: ${existing.pid}, heartbeat age: ${Math.round(heartbeatAgeMs / 1000)}s). Attempting recovery...`
         );
 
         try {
@@ -45,9 +45,10 @@ export async function runStartCommand(projectRoot: string): Promise<void> {
   await initTrackingState(projectRoot, session.sessionId, session.startedAt);
   await writeSession(projectRoot, session);
 
-  console.log(`Tracking started for ${projectRoot}`);
-  console.log(`Background daemon pid: ${pid}`);
-  console.log("Session data is stored in .ducky/session.json");
+  console.log("Tracking started.");
+  console.log(`Project: ${projectRoot}`);
+  console.log(`Daemon pid: ${pid}`);
+  console.log("State files: .ducky/session.json, .ducky/tracking.json");
 }
 
 async function waitForExit(pid: number, timeoutMs: number): Promise<void> {

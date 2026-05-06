@@ -35,6 +35,9 @@ export async function runStopCommand(projectRoot: string): Promise<void> {
   console.log("Tracking stopped.");
   console.log(`Report written to ${reportPath}`);
   console.log(
+    `Signal samples: process=${report.tracking.signals.process.samples}, files=${report.tracking.signals.files.samples}, git=${report.tracking.signals.git.samples}`
+  );
+  console.log(
     `Session duration: ${report.metadata.durationSeconds}s (start: ${report.metadata.sessionStartTime}, end: ${report.metadata.sessionEndTime})`
   );
   console.log(`Daemon status at stop: ${wasAlive ? "running and terminated" : "already not running"}`);
