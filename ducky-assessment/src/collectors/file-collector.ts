@@ -11,6 +11,8 @@ export async function collectFileSample(projectRoot: string, startedAt: string):
   const startedAtMs = new Date(startedAt).getTime();
   let scanned = 0;
   let modifiedSinceStart = 0;
+  const extensionTouchCounts: Record<string, number> = {};
+  const extensionSequence: string[] = [];
 
   const queue: string[] = [projectRoot];
 
@@ -46,6 +48,13 @@ export async function collectFileSample(projectRoot: string, startedAt: string):
         const stat = await fs.stat(filePath);
         if (stat.mtimeMs >= startedAtMs) {
           modifiedSinceStart += 1;
+
+          const extension = normalizeExtension(path.extname(entry.name));
+          extensionTouchCounts[extension] = (extensionTouchCounts[extension] ?? 0) + 1;
+
+          if (extensionSequence[extensionSequence.length - 1] !== extension) {
+            extensionSequence.push(extension);
+          }
         }
       } catch {
         // Ignore files that disappear during scan.
@@ -60,6 +69,12 @@ export async function collectFileSample(projectRoot: string, startedAt: string):
   return {
     timestamp: new Date().toISOString(),
     trackedFileCount: scanned,
-    filesModifiedSinceStart: modifiedSinceStart
+    filesModifiedSinceStart: modifiedSinceStart,
+    extensionTouchCounts,
+    extensionSequence
   };
+}
+
+function normalizeExtension(ext: string): string {
+  return ext.length > 0 ? ext.toLowerCase() : "[no_ext]";
 }

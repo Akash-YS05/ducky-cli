@@ -8,6 +8,8 @@ export interface FileSample {
   timestamp: string;
   trackedFileCount: number;
   filesModifiedSinceStart: number;
+  extensionTouchCounts: Record<string, number>;
+  extensionSequence: string[];
 }
 
 export interface GitSample {

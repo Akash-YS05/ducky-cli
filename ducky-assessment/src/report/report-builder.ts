@@ -27,6 +27,8 @@ export interface DuckyReport {
         samples: number;
         maxFilesModifiedSinceStart: number;
         trackedFileScanMax: number;
+        extensionTouchCounts: Record<string, number>;
+        extensionSequence: string[];
       };
       git: {
         samples: number;
@@ -68,6 +70,8 @@ export function buildReport(
 
   const maxFilesModifiedSinceStart = maxNumber(fileSamples.map((sample) => sample.filesModifiedSinceStart), 0);
   const trackedFileScanMax = maxNumber(fileSamples.map((sample) => sample.trackedFileCount), 0);
+  const extensionTouchCounts = aggregateExtensionTouchCounts(fileSamples);
+  const extensionSequence = aggregateExtensionSequence(fileSamples);
   const fileModificationIntensity =
     trackedFileScanMax > 0 ? Number((maxFilesModifiedSinceStart / trackedFileScanMax).toFixed(3)) : 0;
 
@@ -103,7 +107,9 @@ export function buildReport(
         files: {
           samples: fileSamples.length,
           maxFilesModifiedSinceStart,
-          trackedFileScanMax
+          trackedFileScanMax,
+          extensionTouchCounts,
+          extensionSequence
         },
         git: {
           samples: gitSamples.length,
@@ -127,6 +133,44 @@ function maxNumber(values: number[], fallback: number): number {
   }
 
   return values.reduce((max, value) => (value > max ? value : max), values[0] ?? fallback);
+}
+
+function aggregateExtensionTouchCounts(fileSamples: TrackingState["fileSamples"]): Record<string, number> {
+  const counts: Record<string, number> = {};
+
+  for (const sample of fileSamples) {
+    for (const [ext, count] of Object.entries(sample.extensionTouchCounts)) {
+      counts[ext] = (counts[ext] ?? 0) + count;
+    }
+  }
+
+  return sortCountRecord(counts);
+}
+
+function aggregateExtensionSequence(fileSamples: TrackingState["fileSamples"]): string[] {
+  const sequence: string[] = [];
+
+  for (const sample of fileSamples) {
+    for (const ext of sample.extensionSequence) {
+      if (sequence[sequence.length - 1] !== ext) {
+        sequence.push(ext);
+      }
+    }
+  }
+
+  return sequence;
+}
+
+function sortCountRecord(counts: Record<string, number>): Record<string, number> {
+  const sortedEntries = Object.entries(counts).sort((a, b) => {
+    if (b[1] === a[1]) {
+      return a[0].localeCompare(b[0]);
+    }
+
+    return b[1] - a[1];
+  });
+
+  return Object.fromEntries(sortedEntries);
 }
 
 export async function writeReport(projectRoot: string, report: DuckyReport): Promise<string> {
