@@ -26,7 +26,7 @@ program
   .command("stop")
   .description("Stop active tracking and generate a report")
   .action(async () => {
-    await runStopCommand();
+    await runStopCommand(currentDirectory);
   });
 
 program

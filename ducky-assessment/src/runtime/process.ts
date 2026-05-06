@@ -6,3 +6,7 @@ export function isProcessAlive(pid: number): boolean {
     return false;
   }
 }
+
+export function terminateProcess(pid: number): void {
+  process.kill(pid, "SIGTERM");
+}
