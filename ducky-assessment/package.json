@@ -4,12 +4,20 @@
   "description": "AI Usage Tracker CLI",
   "type": "module",
   "bin": {
-    "ducky": "src/index.js"
+    "ducky": "dist/index.js"
   },
   "scripts": {
-    "start": "node src/index.js"
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "dev": "node --loader ts-node/esm src/index.ts",
+    "prepare": "npm run build"
   },
   "dependencies": {
     "commander": "^13.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.17",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
   }
 }
