@@ -1,6 +1,7 @@
 import { createInitialSession, ensureDuckyDir, readSession, writeSession } from "../runtime/session-store.js";
 import { isProcessAlive } from "../runtime/process.js";
 import { spawnDaemon } from "../runtime/daemon.js";
+import { initTrackingState } from "../runtime/tracking-store.js";
 
 export async function runStartCommand(projectRoot: string): Promise<void> {
   await ensureDuckyDir(projectRoot);
@@ -15,6 +16,7 @@ export async function runStartCommand(projectRoot: string): Promise<void> {
   const pid = spawnDaemon(projectRoot);
   const session = createInitialSession(projectRoot, pid);
 
+  await initTrackingState(projectRoot, session.startedAt);
   await writeSession(projectRoot, session);
 
   console.log(`Tracking started for ${projectRoot}`);

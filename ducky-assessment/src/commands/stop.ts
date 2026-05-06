@@ -1,6 +1,7 @@
 import { buildReport, writeReport } from "../report/report-builder.js";
 import { isProcessAlive, terminateProcess } from "../runtime/process.js";
 import { clearSession, readSession } from "../runtime/session-store.js";
+import { readTrackingState } from "../runtime/tracking-store.js";
 
 const SHUTDOWN_GRACE_MS = 2_000;
 const SHUTDOWN_POLL_INTERVAL_MS = 100;
@@ -25,7 +26,8 @@ export async function runStopCommand(projectRoot: string): Promise<void> {
     await waitForExit(session.pid, SHUTDOWN_GRACE_MS);
   }
 
-  const report = buildReport(session, new Date(), wasAlive ? "stopped_by_user" : "already_stopped");
+  const tracking = await readTrackingState(projectRoot);
+  const report = buildReport(session, tracking, new Date(), wasAlive ? "stopped_by_user" : "already_stopped");
   const reportPath = await writeReport(projectRoot, report);
 
   await clearSession(projectRoot);

@@ -3,6 +3,7 @@ import path from "node:path";
 export const DUCKY_DIR_NAME = ".ducky";
 export const SESSION_FILE_NAME = "session.json";
 export const LOG_FILE_NAME = "daemon.log";
+export const TRACKING_FILE_NAME = "tracking.json";
 
 export function getDuckyDir(projectRoot: string): string {
   return path.join(projectRoot, DUCKY_DIR_NAME);
@@ -14,4 +15,8 @@ export function getSessionFilePath(projectRoot: string): string {
 
 export function getLogFilePath(projectRoot: string): string {
   return path.join(getDuckyDir(projectRoot), LOG_FILE_NAME);
+}
+
+export function getTrackingFilePath(projectRoot: string): string {
+  return path.join(getDuckyDir(projectRoot), TRACKING_FILE_NAME);
 }

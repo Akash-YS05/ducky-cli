@@ -1,4 +1,6 @@
+import { collectAllSignals } from "../collectors/index.js";
 import { readSession, writeSession } from "../runtime/session-store.js";
+import { readTrackingState, writeTrackingState } from "../runtime/tracking-store.js";
 
 const HEARTBEAT_INTERVAL_MS = 5_000;
 
@@ -13,11 +15,27 @@ export async function runInternalWatchCommand(projectRoot: string): Promise<void
 
     session.lastHeartbeatAt = new Date().toISOString();
     await writeSession(projectRoot, session);
+
+    const tracking = await readTrackingState(projectRoot);
+    if (!tracking) {
+      return;
+    }
+
+    const updated = await collectAllSignals(tracking);
+    await writeTrackingState(projectRoot, updated);
   };
 
-  await tick();
+  await safeTick(tick);
 
   setInterval(() => {
-    void tick();
+    void safeTick(tick);
   }, HEARTBEAT_INTERVAL_MS);
+}
+
+async function safeTick(tick: () => Promise<void>): Promise<void> {
+  try {
+    await tick();
+  } catch {
+    // Ignore collector errors to keep daemon passive and resilient.
+  }
 }
