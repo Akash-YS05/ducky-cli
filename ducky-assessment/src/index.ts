@@ -5,15 +5,24 @@ import { Command } from "commander";
 import { runStartCommand } from "./commands/start.js";
 import { runStopCommand } from "./commands/stop.js";
 import { runInternalWatchCommand } from "./commands/internal-watch.js";
-
+import { DUCKY_ASCII_ART } from "./commands/start.js";
+//test
 const program = new Command();
 
 const currentDirectory = process.cwd();
-
+//this is a test change
 program
   .name("ducky")
   .description("AI usage tracker CLI")
   .version("1.0.0");
+
+const cliArgs = process.argv.slice(2);
+const isTopLevelHelp = cliArgs.length === 1 && (cliArgs[0] === "--help" || cliArgs[0] === "-h");
+
+if (isTopLevelHelp) {
+  console.log(DUCKY_ASCII_ART);
+  console.log();
+}
 
 program
   .command("start")

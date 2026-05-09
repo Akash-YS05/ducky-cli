@@ -2,7 +2,7 @@ import { buildReport, writeReport } from "../report/report-builder.js";
 import { isProcessAlive, terminateProcess } from "../runtime/process.js";
 import { clearSession, readSession } from "../runtime/session-store.js";
 import { clearTrackingState, readTrackingState } from "../runtime/tracking-store.js";
-
+//test
 const SHUTDOWN_GRACE_MS = 2_000;
 const SHUTDOWN_POLL_INTERVAL_MS = 100;
 
